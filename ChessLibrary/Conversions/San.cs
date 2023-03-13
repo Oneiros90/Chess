@@ -9,11 +9,10 @@
 
 namespace Chess;
 
-public partial class ChessBoard
+public partial class Chessboard
 {
     /// <summary>
-    /// Tries to
-    /// parse San-notated move into Move object<br/>
+    /// Tries to parse San-notated move into Move object<br/>
     /// Long algebraic notation is also acceptable
     /// </summary>
     /// <param name="san">San-notated move to parse</param>
@@ -32,9 +31,9 @@ public partial class ChessBoard
     /// <param name="san">San-notated move to parse</param>
     /// <param name="resetSan">Whether SAN needs to be regenerated</param>
     /// <returns>Parsed Move object</returns>
-    /// <exception cref="ChessArgumentException">Given San-notated move didn't match the Regex pattern</exception>
-    /// <exception cref="ChessSanNotFoundException">Given San-notated move is not valid for current board positions</exception>
-    /// <exception cref="ChessSanTooAmbiguousException">Given San-notated move is too ambiguous between multiple moves</exception>
+    /// <exception cref="ArgumentException">Given San-notated move didn't match the Regex pattern</exception>
+    /// <exception cref="SanNotFoundException">Given San-notated move is not valid for current board positions</exception>
+    /// <exception cref="SanTooAmbiguousException">Given San-notated move is too ambiguous between multiple moves</exception>
     public Move ParseFromSan(string san, bool resetSan = false)
     {
         var (succeeded, exception) = SanBuilder.TryParse(this, san, out var move, resetSan);
@@ -51,7 +50,7 @@ public partial class ChessBoard
     /// </summary>
     /// <param name="move">Move to parse</param>
     /// <param name="san">Result with parsed SAN-string</param>
-    /// <returns>Whether convertion succeeded</returns>
+    /// <returns>Whether conversion succeeded</returns>
     public bool TryParseToSan(Move move, [NotNullWhen(true)] out string? san)
     {
         return SanBuilder.TryParse(this, move, out san).succeeded;

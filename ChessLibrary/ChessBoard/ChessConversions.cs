@@ -9,45 +9,44 @@
 
 namespace Chess;
 
-public partial class ChessBoard
+public partial class Chessboard
 {
     /// <summary>
-    /// Generates FEN string representing current board
+    ///     Generates FEN string representing current board
     /// </summary>
-    public string ToFen()
-    {
-        return FenBoardBuilder.Load(this).ToString();
-    }
+    public string ToFen() => FenBoardBuilder.Load(this).ToString();
 
     /// <summary>
-    /// Generates PGN string representing current board
+    ///     Generates PGN string representing current board
     /// </summary>
-    public string ToPgn()
-    {
-        return PgnBuilder.BoardToPgn(this);
-    }
+    public string ToPgn() => PgnBuilder.BoardToPgn(this);
 
     /// <summary>
-    /// Generates ASCII string representing current board
+    ///     Generates ASCII string representing current board
     /// </summary>
     public string ToAscii(bool displayFull = false)
     {
         StringBuilder builder = new("   ┌────────────────────────┐\n");
 
-        for (int i = 8 - 1; i >= 0; i--)
+        for (var i = 8 - 1; i >= 0; i--)
         {
             builder.Append(" " + (i + 1) + " │");
-            for (int j = 0; j < 8; j++)
+            for (var j = 0; j < 8; j++)
             {
                 builder.Append(' ');
 
                 if (pieces[i, j] is not null)
+                {
                     builder.Append(pieces[i, j].ToFenChar());
+                }
                 else
+                {
                     builder.Append('.');
+                }
 
                 builder.Append(' ');
             }
+
             builder.Append("│\n");
         }
 
@@ -61,9 +60,16 @@ public partial class ChessBoard
             builder.Append("  Turn: " + Turn + '\n');
 
             if (CapturedWhite.Length > 0)
-                builder.Append("  White Captured: " + string.Join(", ", CapturedWhite.Select(p => p.ToFenChar())) + '\n');
+            {
+                builder.Append(
+                    "  White Captured: " + string.Join(", ", CapturedWhite.Select(p => p.ToFenChar())) + '\n');
+            }
+
             if (CapturedBlack.Length > 0)
-                builder.Append("  Black Captured: " + string.Join(", ", CapturedBlack.Select(p => p.ToFenChar())) + '\n');
+            {
+                builder.Append(
+                    "  Black Captured: " + string.Join(", ", CapturedBlack.Select(p => p.ToFenChar())) + '\n');
+            }
         }
 
         return builder.ToString();
@@ -71,15 +77,19 @@ public partial class ChessBoard
 
     internal int GetHalfMovesCount()
     {
-        int index = LastIrreversibleMoveIndex;
+        var index = LastIrreversibleMoveIndex;
 
         if (LoadedFromFen && index < 0)
+        {
             return FenBuilder!.HalfMoves + moveIndex + 1;
+        }
 
         if (index >= 0)
+        {
             return moveIndex - index;
-        else
-            return moveIndex + 1;
+        }
+
+        return moveIndex + 1;
     }
 
     internal int GetFullMovesCount()
@@ -87,7 +97,9 @@ public partial class ChessBoard
         var count = 0;
 
         if (LoadedFromFen)
-            count += (FenBuilder.FullMoves * 2) + (FenBuilder.Turn == PieceColor.Black ? 1 : 0) - 2;
+        {
+            count += FenBuilder.FullMoves * 2 + (FenBuilder.Turn == PieceColor.Black ? 1 : 0) - 2;
+        }
 
         return (moveIndex + count + 3) / 2;
     }

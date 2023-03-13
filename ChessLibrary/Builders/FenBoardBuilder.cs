@@ -58,10 +58,10 @@ internal class FenBoardBuilder
         var matches = Regexes.RegexFen.Matches(fen);
 
         if (matches.Count == 0)
-            return (false, new ChessArgumentException(null, "FEN board string should match pattern: " + Regexes.FenPattern));
+            return (false, new ArgumentException(null, "FEN board string should match pattern: " + Regexes.FenPattern));
 
         if (!Regexes.RegexFenContainsOneWhiteKing.IsMatch(fen) || !Regexes.RegexFenContainsOneBlackKing.IsMatch(fen))
-            return (false, new ChessArgumentException(null, "Chess board should have exact 1 white king and exact 1 black king"));
+            return (false, new ArgumentException(null, "Chess board should have exact 1 white king and exact 1 black king"));
 
         builder = new FenBoardBuilder();
 
@@ -177,16 +177,16 @@ internal class FenBoardBuilder
         }
     }
 
-    internal static FenBoardBuilder Load(ChessBoard board)
+    internal static FenBoardBuilder Load(Chessboard board)
     {
         return new FenBoardBuilder(board.pieces)
         {
             Turn = board.Turn,
-            CastleWK = ChessBoard.HasRightToCastle(PieceColor.White, CastleType.King, board),
-            CastleWQ = ChessBoard.HasRightToCastle(PieceColor.White, CastleType.Queen, board),
-            CastleBK = ChessBoard.HasRightToCastle(PieceColor.Black, CastleType.King, board),
-            CastleBQ = ChessBoard.HasRightToCastle(PieceColor.Black, CastleType.Queen, board),
-            EnPassant = ChessBoard.LastMoveEnPassantPosition(board),
+            CastleWK = Chessboard.HasRightToCastle(PieceColor.White, CastleType.King, board),
+            CastleWQ = Chessboard.HasRightToCastle(PieceColor.White, CastleType.Queen, board),
+            CastleBK = Chessboard.HasRightToCastle(PieceColor.Black, CastleType.King, board),
+            CastleBQ = Chessboard.HasRightToCastle(PieceColor.Black, CastleType.Queen, board),
+            EnPassant = Chessboard.LastMoveEnPassantPosition(board),
             HalfMoves = board.GetHalfMovesCount(),
             FullMoves = board.GetFullMovesCount()
         };

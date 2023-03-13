@@ -10,72 +10,97 @@
 namespace Chess;
 
 /// <summary>
-/// Chess board logic
+///     Chess board logic
 /// </summary>
-public partial class ChessBoard
+public partial class Chessboard
 {
+    internal readonly List<Move> executedMoves;
+    internal readonly Dictionary<string, string> headers;
+
+    private bool blackKingChecked;
+    private EndgameInfo? _endgame;
+    private bool whiteKingChecked;
+
+    internal FenBoardBuilder? FenBuilder;
+    internal int moveIndex = -1;
     internal Piece?[,] pieces;
 
     /// <summary>
-    /// Returns Piece on given position
+    ///     Creates new chess board with default pieces positions
+    /// </summary>
+    public Chessboard()
+    {
+        executedMoves = new List<Move>();
+        headers = new Dictionary<string, string>();
+        SetChessBeginSituation();
+    }
+
+    /// <summary>
+    ///     To execute operations and to not corrupt the main chess object
+    /// </summary>
+    internal Chessboard(Piece?[,] pieces, IEnumerable<Move> moves)
+    {
+        executedMoves = new List<Move>(moves);
+        this.pieces = (Piece[,])pieces.Clone();
+    }
+
+    /// <summary>
+    ///     Returns Piece on given position
     /// </summary>
     /// <param name="pos">Position on chess board</param>
     public Piece? this[Position pos] => pieces[pos.Y, pos.X];
 
     /// <summary>
-    /// Returns Piece on given position
+    ///     Returns Piece on given position
     /// </summary>
     /// <param name="x">a->h</param>
     /// <param name="y">1->8</param>
-    public Piece? this[char x, short y] => this[new Position(x.ToString() + y.ToString())];
+    public Piece? this[char x, short y] => this[new Position(x + y.ToString())];
 
     /// <summary>
-    /// Returns Piece on given position
+    ///     Returns Piece on given position
     /// </summary>
     /// <param name="s">
-    /// Position as string<br/>
-    /// ex.: e4 / a1 / h8 etc.
+    ///     Position as string<br />
+    ///     ex.: e4 / a1 / h8 etc.
     /// </param>
     public Piece? this[string s] => this[new Position(s)];
 
     /// <summary>
-    /// Returns Piece on given position
+    ///     Returns Piece on given position
     /// </summary>
     /// <param name="x">0->8</param>
     /// <param name="y">0->8</param>
     public Piece? this[short x, short y] => pieces[y, x];
 
-    internal readonly Dictionary<string, string> headers;
-
     /// <summary>
-    /// Headers of current chess board
+    ///     Headers of current chess board
     /// </summary>
     public IReadOnlyDictionary<string, string> Headers => new Dictionary<string, string>(headers);
 
-    internal FenBoardBuilder? FenBuilder;
     /// <summary>
-    /// Whether board has been loaded from Forsyth-Edwards Notation
+    ///     Whether board has been loaded from Forsyth-Edwards Notation
     /// </summary>
     public bool LoadedFromFen => FenBuilder is not null;
 
     /// <summary>
-    /// Determinize whose player turn is it now
+    ///     Determinize whose player turn is it now
     /// </summary>
     public PieceColor Turn
     {
         get
         {
             if (LoadedFromFen)
+            {
                 return DisplayedMoves.Count % 2 == 0 ? FenBuilder.Turn : FenBuilder.Turn.OppositeColor();
-            else
-                return DisplayedMoves.Count % 2 == 0 ? PieceColor.White : PieceColor.Black;
+            }
 
+            return DisplayedMoves.Count % 2 == 0 ? PieceColor.White : PieceColor.Black;
         }
     }
 
-    private bool whiteKingChecked = false;
     /// <summary>
-    /// Returns the state of White king (Checked or not)
+    ///     Returns the state of White king (Checked or not)
     /// </summary>
     public bool WhiteKingChecked
     {
@@ -85,14 +110,13 @@ public partial class ChessBoard
             if (value != whiteKingChecked)
             {
                 whiteKingChecked = value;
-                OnWhiteKingCheckedChangedEvent(new CheckEventArgs(this, WhiteKing, value));
+                OnWhiteKingCheckedChangedEvent(new CheckedChangedEventArgs(this, WhiteKing, value));
             }
         }
     }
 
-    private bool blackKingChecked = false;
     /// <summary>
-    /// Returns the state of Black king (Checked or not)
+    ///     Returns the state of Black king (Checked or not)
     /// </summary>
     public bool BlackKingChecked
     {
@@ -102,22 +126,23 @@ public partial class ChessBoard
             if (value != blackKingChecked)
             {
                 blackKingChecked = value;
-                OnBlackKingCheckedChangedEvent(new CheckEventArgs(this, BlackKing, value));
+                OnBlackKingCheckedChangedEvent(new CheckedChangedEventArgs(this, BlackKing, value));
             }
         }
     }
 
     /// <summary>
-    /// Returns White king position on chess board
+    ///     Returns White king position on chess board
     /// </summary>
     public Position WhiteKing => GetKingPosition(PieceColor.White, this);
+
     /// <summary>
-    /// Returns Black king position on chess board
+    ///     Returns Black king position on chess board
     /// </summary>
     public Position BlackKing => GetKingPosition(PieceColor.Black, this);
 
     /// <summary>
-    /// White pieces that has been captured by black player
+    ///     White pieces that has been captured by black player
     /// </summary>
     public Piece[] CapturedWhite
     {
@@ -126,17 +151,19 @@ public partial class ChessBoard
             var captured = new List<Piece>();
 
             if (LoadedFromFen)
+            {
                 captured.AddRange(FenBuilder!.WhiteCaptured);
+            }
 
             captured.AddRange(DisplayedMoves.Where(m => m.CapturedPiece?.Color == PieceColor.White)
-                                            .Select(m => new Piece(m.CapturedPiece.Color, m.CapturedPiece.Type)));
+                .Select(m => new Piece(m.CapturedPiece.Color, m.CapturedPiece.Type)));
 
             return captured.ToArray();
         }
     }
 
     /// <summary>
-    /// Black pieces that has been captured by white player
+    ///     Black pieces that has been captured by white player
     /// </summary>
     public Piece[] CapturedBlack
     {
@@ -145,47 +172,50 @@ public partial class ChessBoard
             var captured = new List<Piece>();
 
             if (LoadedFromFen)
+            {
                 captured.AddRange(FenBuilder!.BlackCaptured);
+            }
 
             captured.AddRange(DisplayedMoves.Where(m => m.CapturedPiece?.Color == PieceColor.Black)
-                                            .Select(m => new Piece(m.CapturedPiece.Color, m.CapturedPiece.Type)));
+                .Select(m => new Piece(m.CapturedPiece.Color, m.CapturedPiece.Type)));
 
             return captured.ToArray();
         }
     }
 
-    private EndGameInfo? endGame;
     /// <summary>
-    /// Represents End of game state(or null), won side(or null if draw) and type of end game
+    ///     Represents End of game state(or null), won side(or null if draw) and type of end game
     /// </summary>
-    public EndGameInfo? EndGame
+    public EndgameInfo? Endgame
     {
-        get => endGame;
+        get => _endgame;
         private set
         {
-            endGame = value;
-            if (value is not null) OnEndGameEvent();
+            _endgame = value;
+            if (value is not null)
+            {
+                OnEndGameEvent();
+            }
         }
     }
-    /// <summary>
-    /// When true => use: EndGame. for more info on endgame(type, won side)
-    /// </summary>
-    public bool IsEndGame => EndGame is not null;
 
-    internal readonly List<Move> executedMoves;
     /// <summary>
-    /// Executed moves on this chess board<br/>
+    ///     When true => use: EndGame. for more info on endgame(type, won side)
+    /// </summary>
+    public bool IsEndgame => Endgame is not null;
+
+    /// <summary>
+    ///     Executed moves on this chess board<br />
     /// </summary>
     public IReadOnlyList<Move> ExecutedMoves => new List<Move>(executedMoves);
 
     /// <summary>
-    /// Executed moves in SAN
+    ///     Executed moves in SAN
     /// </summary>
     public List<string> MovesToSan => new List<Move>(executedMoves).Select(m => m.San).ToList();
 
-    internal int moveIndex = -1;
     /// <summary>
-    /// Index of displayed move on this chess board
+    ///     Index of displayed move on this chess board
     /// </summary>
     public int MoveIndex
     {
@@ -193,34 +223,38 @@ public partial class ChessBoard
         set
         {
             if (value < executedMoves.Count && value >= -1)
+            {
                 DisplayMoves(executedMoves.GetRange(0, value + 1));
+            }
             else
+            {
                 throw new IndexOutOfRangeException("Move not found");
+            }
         }
     }
 
     /// <summary>
-    /// Whether last move is displayed on this chess board<br/>
-    /// False after Previous() / First() / MoveIndex = ...
+    ///     Whether last move is displayed on this chess board<br />
+    ///     False after Previous() / First() / MoveIndex = ...
     /// </summary>
     public bool IsLastMoveDisplayed => moveIndex == executedMoves.Count - 1;
 
     internal List<Move> DisplayedMoves => executedMoves.GetRange(0, moveIndex + 1);
 
     /// <summary>
-    /// https://www.chessprogramming.org/Irreversible_Moves
+    ///     https://www.chessprogramming.org/Irreversible_Moves
     /// </summary>
     public int LastIrreversibleMoveIndex
     {
         get
         {
-            int index = moveIndex;
-            bool moveFound = false;
+            var index = moveIndex;
+            var moveFound = false;
 
             while (index >= 0 && !moveFound)
             {
                 if (executedMoves[index].CapturedPiece is not null
-                 || executedMoves[index].Piece.Type == PieceType.Pawn)
+                    || executedMoves[index].Piece.Type == PieceType.Pawn)
                 {
                     moveFound = true;
                 }
@@ -232,67 +266,52 @@ public partial class ChessBoard
         }
     }
 
-    private AutoEndgameRules autoEndgameRules = AutoEndgameRules.None;
-
     /// <summary>
-    /// This property keeps track of auto-draw (endgame) rules that will be used to check for endgame
+    ///     This property keeps track of auto-draw (endgame) rules that will be used to check for endgame
     /// </summary>
-    public AutoEndgameRules AutoEndgameRules { get => autoEndgameRules; set => autoEndgameRules = value; }
+    public AutoEndgameRules AutoEndgameRules { get; set; } = AutoEndgameRules.None;
 
     /// <summary>
-    /// Creates new chess board with default pieces positions
-    /// </summary>
-    public ChessBoard()
-    {
-        executedMoves = new List<Move>();
-        headers = new Dictionary<string, string>();
-        SetChessBeginSituation();
-    }
-
-    /// <summary>
-    /// To execute operations and to not corrupt the main chess object
-    /// </summary>
-    internal ChessBoard(Piece?[,] pieces, List<Move> moves)
-    {
-        executedMoves = new List<Move>(moves);
-        this.pieces = (Piece[,])pieces.Clone();
-    }
-
-    /// <summary>
-    /// Converts SAN move into Move object and performs it on chess board
+    ///     Converts SAN move into Move object and performs it on chess board
     /// </summary>
     /// <param name="san">Chess move in SAN</param>
-    public bool Move(string san)
-    {
-        return Move(ParseFromSan(san, false));
-    }
+    public bool Move(string san) => Move(ParseFromSan(san));
 
     /// <summary>
-    /// Validates the move and performs it on chess board
+    ///     Validates the move and performs it on chess board
     /// </summary>
     /// <param name="move">Move that will be validated and performed</param>
     /// <returns>Validation succeed and move is performed => true</returns>
     /// <exception cref="ArgumentNullException">Move is null</exception>
-    /// <exception cref="ChessGameEndedException">Game Ended</exception>
-    /// <exception cref="ChessInvalidMoveException">Currently displaying one of previous moves, use first board.DisplayLastMove();</exception>
-    /// <exception cref="ChessPieceNotFoundException">Piece on given position not found</exception>
+    /// <exception cref="GameEndedException">Game Ended</exception>
+    /// <exception cref="InvalidMoveException">Currently displaying one of previous moves, use first board.DisplayLastMove();</exception>
+    /// <exception cref="PieceNotFoundException">Piece on given position not found</exception>
     public bool Move(Move move)
     {
-        if (IsEndGame)
-            throw new ChessGameEndedException(this, EndGame);
+        if (IsEndgame)
+        {
+            throw new GameEndedException(this, Endgame);
+        }
 
         if (!IsLastMoveDisplayed)
-            throw new ChessInvalidMoveException(this, "Please use board.DisplayLastMove(); to be able to perform new moves in this chess game", move);
+        {
+            throw new InvalidMoveException(this,
+                "Please use board.DisplayLastMove(); to be able to perform new moves in this chess game", move);
+        }
 
         if (IsValidMove(move, this, true, true))
         {
             if (move.San is null)
+            {
                 ParseToSan(move);
+            }
 
             executedMoves.Add(move);
 
             if (move.CapturedPiece is not null)
+            {
                 OnCapturedEvent(move.CapturedPiece);
+            }
 
             DropPieceToNewPosition(move);
 
@@ -303,63 +322,68 @@ public partial class ChessBoard
 
             return true;
         }
-        else return false;
+
+        return false;
     }
 
     /// <summary>
-    /// Adding header to this chess game<br/>
-    /// ex.:<br/>
-    /// name => Black, value => Geras1mleo<br/>
-    /// Pgn Output: [Black "Geras1mleo"]
+    ///     Adding header to this chess game<br />
+    ///     ex.:<br />
+    ///     name => Black, value => Geras1mleo<br />
+    ///     Pgn Output: [Black "Geras1mleo"]
     /// </summary>
     /// <param name="name">Header name</param>
     /// <param name="value">Header value</param>
     public void AddHeader(string name, string value)
     {
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentNullException(nameof(name));
+        }
+
         if (string.IsNullOrWhiteSpace(value))
+        {
             throw new ArgumentNullException(nameof(value));
+        }
 
         if (name.ToLower() == "fen")
-            throw new ChessArgumentException(this, "To load game from fen please use: board.LoadFen();");
+        {
+            throw new ArgumentException(this, "To load game from fen please use: board.LoadFen();");
+        }
 
         headers.Add(name, value);
     }
 
     /// <summary>
-    /// Removing header from this chess game
+    ///     Removing header from this chess game
     /// </summary>
     /// <param name="name">Header name</param>
     public void RemoveHeader(string name)
     {
         if (name.ToLower() == "fen")
-            throw new ChessArgumentException(this, "Could not remove FEN header from current game: FEN header required when loaded from FEN...");
+        {
+            throw new ArgumentException(this,
+                "Could not remove FEN header from current game: FEN header required when loaded from FEN...");
+        }
 
         headers.Remove(name);
     }
 
     // Temporary disabled
     /// <summary>
-    /// Puts given piece on given position<br/>
-    /// Warning! Checked state and end game state is not being updated
+    ///     Puts given piece on given position<br />
+    ///     Warning! Checked state and end game state is not being updated
     /// </summary>
-    private void Put(Piece piece, Position position)
-    {
-        pieces[position.Y, position.X] = piece;
-    }
+    private void Put(Piece piece, Position position) => pieces[position.Y, position.X] = piece;
 
     /// <summary>
-    /// Removes a piece on given position from board<br/>
-    /// Warning! Checked state and end game state is not being updated
+    ///     Removes a piece on given position from board<br />
+    ///     Warning! Checked state and end game state is not being updated
     /// </summary>
-    private void Remove(Position position)
-    {
-        pieces[position.Y, position.X] = null;
-    }
+    private void Remove(Position position) => pieces[position.Y, position.X] = null;
 
     /// <summary>
-    /// Clears board and sets begin positions
+    ///     Clears board and sets begin positions
     /// </summary>
     public void Clear()
     {
@@ -367,23 +391,20 @@ public partial class ChessBoard
         executedMoves.Clear();
         headers.Clear();
         moveIndex = -1;
-        endGame = null;
+        _endgame = null;
         FenBuilder = null;
         WhiteKingChecked = false;
         BlackKingChecked = false;
     }
 
     /// <summary>
-    /// Restores board according to moves and/or positions loaded from fen<br/>
-    /// Similar to Last()
+    ///     Restores board according to moves and/or positions loaded from fen<br />
+    ///     Similar to Last()
     /// </summary>
-    public void Restore()
-    {
-        DisplayMoves(executedMoves);
-    }
+    public void Restore() => DisplayMoves(executedMoves);
 
     /// <summary>
-    /// Cancel last move and display previous pieces positions
+    ///     Cancel last move and display previous pieces positions
     /// </summary>
     public void Cancel()
     {
@@ -392,61 +413,69 @@ public partial class ChessBoard
             var move = executedMoves[^1];
 
             if (move.Parameter is not null)
+            {
                 move.Parameter.Undo(move, this);
+            }
             else
+            {
                 RestorePiece(move, this);
+            }
 
             executedMoves.RemoveAt(executedMoves.Count - 1);
             moveIndex = executedMoves.Count - 1;
 
             HandleKingChecked();
-            EndGame = null;
+            Endgame = null;
         }
     }
 
     /// <summary>
-    /// Displaying first move(if possible)
+    ///     Displaying first move(if possible)
     /// </summary>
     public void First() => MoveIndex = 0;
 
     /// <summary>
-    /// Displaying last move(if possible)
+    ///     Displaying last move(if possible)
     /// </summary>
     public void Last() => MoveIndex = executedMoves.Count - 1;
 
     /// <summary>
-    /// Displaying next move(if possible)
+    ///     Displaying next move(if possible)
     /// </summary>
     public void Next() => MoveIndex++;
 
     /// <summary>
-    /// Displaying previous move(if possible)
+    ///     Displaying previous move(if possible)
     /// </summary>
     public void Previous() => MoveIndex--;
 
     /// <summary>
-    /// Declares resign of one of sides
+    ///     Declares resign of one of sides
     /// </summary>
     /// <param name="resignedSide">Resigned side</param>
-    /// <exception cref="ChessGameEndedException"></exception>
+    /// <exception cref="GameEndedException"></exception>
     public void Resign(PieceColor resignedSide)
     {
-        if (IsEndGame)
-            throw new ChessGameEndedException(this, EndGame);
+        if (IsEndgame)
+        {
+            throw new GameEndedException(this, Endgame);
+        }
 
-        EndGame = new EndGameInfo(EndgameType.Resigned, resignedSide.OppositeColor());
+        Endgame = new EndgameInfo(EndgameType.Resigned, resignedSide.OppositeColor());
     }
 
     /// <summary>
-    /// Declares draw in current chess game
+    ///     Declares draw in current chess game
     /// </summary>
-    /// <exception cref="ChessGameEndedException"></exception>
+    /// <exception cref="GameEndedException"></exception>
     public void Draw()
     {
-        if (IsEndGame)
-            throw new ChessGameEndedException(this, EndGame);
+        if (IsEndgame)
+        {
+            throw new GameEndedException(this, Endgame);
+        }
 
-        EndGame = new EndGameInfo(EndgameType.DrawDeclared, null);
+        Endgame = new EndgameInfo(EndgameType.DrawDeclared, null);
     }
 
     internal void DropPieceToNewPosition(Move move)
@@ -461,22 +490,26 @@ public partial class ChessBoard
     }
 
     /// <summary>
-    /// Default dropping piece implementation<br/>
-    /// Clearing old, copy to new...
+    ///     Default dropping piece implementation<br />
+    ///     Clearing old, copy to new...
     /// </summary>
-    internal static void DropPiece(Move move, ChessBoard board)
+    internal static void DropPiece(Move move, Chessboard board)
     {
         // Moving piece to its new position
-        board.pieces[move.NewPosition.Y, move.NewPosition.X] = new(board.pieces[move.OriginalPosition.Y, move.OriginalPosition.X].Color, board.pieces[move.OriginalPosition.Y, move.OriginalPosition.X].Type);
+        board.pieces[move.NewPosition.Y, move.NewPosition.X] = new(
+            board.pieces[move.OriginalPosition.Y, move.OriginalPosition.X].Color,
+            board.pieces[move.OriginalPosition.Y, move.OriginalPosition.X].Type);
 
         // Clearing old position
         board.pieces[move.OriginalPosition.Y, move.OriginalPosition.X] = null;
     }
 
-    internal static void RestorePiece(Move move, ChessBoard board)
+    internal static void RestorePiece(Move move, Chessboard board)
     {
         // Moving piece to its original position
-        board.pieces[move.OriginalPosition.Y, move.OriginalPosition.X] = new(board.pieces[move.NewPosition.Y, move.NewPosition.X].Color, board.pieces[move.NewPosition.Y, move.NewPosition.X].Type);
+        board.pieces[move.OriginalPosition.Y, move.OriginalPosition.X] = new(
+            board.pieces[move.NewPosition.Y, move.NewPosition.X].Color,
+            board.pieces[move.NewPosition.Y, move.NewPosition.X].Type);
 
         // Clearing new position / or setting captured piece back
         board.pieces[move.NewPosition.Y, move.NewPosition.X] = move.CapturedPiece;
@@ -485,12 +518,18 @@ public partial class ChessBoard
     private void DisplayMoves(List<Move> moves)
     {
         if (LoadedFromFen)
+        {
             pieces = FenBuilder.Pieces;
+        }
         else
+        {
             SetChessBeginSituation();
+        }
 
-        for (int i = 0; i < moves.Count; i++)
+        for (var i = 0; i < moves.Count; i++)
+        {
             DropPieceToNewPosition(moves[i]);
+        }
 
         moveIndex = moves.Count - 1;
 
@@ -498,8 +537,8 @@ public partial class ChessBoard
     }
 
     /// <summary>
-    /// Checking if there one of kings are checked
-    /// and updating checked states
+    ///     Checking if there one of kings are checked
+    ///     and updating checked states
     /// </summary>
     internal void HandleKingChecked()
     {
@@ -509,10 +548,14 @@ public partial class ChessBoard
         if (moveIndex >= 0 && executedMoves[moveIndex].IsCheck)
         {
             if (executedMoves[moveIndex].Piece.Color == PieceColor.White)
+            {
                 BlackKingChecked = true;
+            }
 
             else if (executedMoves[moveIndex].Piece.Color == PieceColor.Black)
+            {
                 WhiteKingChecked = true;
+            }
         }
         else if (LoadedFromFen)
         {
@@ -522,13 +565,10 @@ public partial class ChessBoard
     }
 
     /// <summary>
-    /// Checking if there is a checkmate or stalemate
-    /// and updating end game state
+    ///     Checking if there is a checkmate or stalemate
+    ///     and updating end game state
     /// </summary>
-    internal void HandleEndGame()
-    {
-        EndGame = new EndGameProvider(this).GetEndGameInfo();
-    }
+    internal void HandleEndGame() => Endgame = new EndgameProvider(this).GetEndGameInfo();
 
     private void SetChessBeginSituation()
     {

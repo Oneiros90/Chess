@@ -12,11 +12,11 @@ namespace Chess;
 /// <summary>
 /// https://www.chessprogramming.org/Repetitions
 /// </summary>
-internal class RepetitionRule : EndGameRule
+internal class RepetitionRule : EndgameRule
 {
     private const int MINIMUM_MOVES_COUNT = 8; // at least 8 moves required to get threefold repetition
 
-    public RepetitionRule(ChessBoard board) : base(board) { }
+    public RepetitionRule(Chessboard board) : base(board) { }
 
     internal override EndgameType Type => EndgameType.Repetition;
 
@@ -30,18 +30,18 @@ internal class RepetitionRule : EndGameRule
         {
             var currentIndex = board.MoveIndex;
 
-            HashSet<ChessBoard> piecesPositions = new HashSet<ChessBoard>(new ChessBoardComparer());
-            piecesPositions.Add(new ChessBoard(board.pieces, board.DisplayedMoves) { FenBuilder = board.FenBuilder, moveIndex = board.MoveIndex });
+            HashSet<Chessboard> piecesPositions = new HashSet<Chessboard>(new ChessBoardComparer());
+            piecesPositions.Add(new Chessboard(board.pieces, board.DisplayedMoves) { FenBuilder = board.FenBuilder, moveIndex = board.MoveIndex });
 
             board.MoveIndex -= MINIMUM_MOVES_COUNT;
 
-            piecesPositions.Add(new ChessBoard(board.pieces, board.DisplayedMoves) { FenBuilder = board.FenBuilder, moveIndex = board.MoveIndex });
+            piecesPositions.Add(new Chessboard(board.pieces, board.DisplayedMoves) { FenBuilder = board.FenBuilder, moveIndex = board.MoveIndex });
 
             if (piecesPositions.Count == 1)
             {
                 board.MoveIndex += (MINIMUM_MOVES_COUNT / 2);
 
-                piecesPositions.Add(new ChessBoard(board.pieces, board.DisplayedMoves) { FenBuilder = board.FenBuilder, moveIndex = board.MoveIndex });
+                piecesPositions.Add(new Chessboard(board.pieces, board.DisplayedMoves) { FenBuilder = board.FenBuilder, moveIndex = board.MoveIndex });
             }
 
             board.MoveIndex = currentIndex; // Setting back to original positions
@@ -53,9 +53,9 @@ internal class RepetitionRule : EndGameRule
     }
 }
 
-internal class ChessBoardComparer : IEqualityComparer<ChessBoard>
+internal class ChessBoardComparer : IEqualityComparer<Chessboard>
 {
-    public bool Equals(ChessBoard? x, ChessBoard? y)
+    public bool Equals(Chessboard? x, Chessboard? y)
     {
         bool isEqual = false;
 
@@ -81,12 +81,12 @@ internal class ChessBoardComparer : IEqualityComparer<ChessBoard>
                 }
             }
 
-            isEqual &= ChessBoard.HasRightToCastle(PieceColor.White, CastleType.King, x) == ChessBoard.HasRightToCastle(PieceColor.White, CastleType.King, y);
-            isEqual &= ChessBoard.HasRightToCastle(PieceColor.White, CastleType.Queen, x) == ChessBoard.HasRightToCastle(PieceColor.White, CastleType.Queen, y);
-            isEqual &= ChessBoard.HasRightToCastle(PieceColor.Black, CastleType.King, x) == ChessBoard.HasRightToCastle(PieceColor.Black, CastleType.King, y);
-            isEqual &= ChessBoard.HasRightToCastle(PieceColor.Black, CastleType.Queen, x) == ChessBoard.HasRightToCastle(PieceColor.Black, CastleType.Queen, y);
+            isEqual &= Chessboard.HasRightToCastle(PieceColor.White, CastleType.King, x) == Chessboard.HasRightToCastle(PieceColor.White, CastleType.King, y);
+            isEqual &= Chessboard.HasRightToCastle(PieceColor.White, CastleType.Queen, x) == Chessboard.HasRightToCastle(PieceColor.White, CastleType.Queen, y);
+            isEqual &= Chessboard.HasRightToCastle(PieceColor.Black, CastleType.King, x) == Chessboard.HasRightToCastle(PieceColor.Black, CastleType.King, y);
+            isEqual &= Chessboard.HasRightToCastle(PieceColor.Black, CastleType.Queen, x) == Chessboard.HasRightToCastle(PieceColor.Black, CastleType.Queen, y);
 
-            isEqual &= ChessBoard.LastMoveEnPassantPosition(x) == ChessBoard.LastMoveEnPassantPosition(y);
+            isEqual &= Chessboard.LastMoveEnPassantPosition(x) == Chessboard.LastMoveEnPassantPosition(y);
         }
         else
         {
@@ -96,7 +96,7 @@ internal class ChessBoardComparer : IEqualityComparer<ChessBoard>
         return isEqual;
     }
 
-    public int GetHashCode([DisallowNull] ChessBoard obj)
+    public int GetHashCode([DisallowNull] Chessboard obj)
     {
         return 0;
     }

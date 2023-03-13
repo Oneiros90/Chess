@@ -9,7 +9,7 @@ public class ChessMoveBenchmark
     [Benchmark]
     public void MoveUsingMoveObject()
     {
-        var board = new ChessBoard();
+        var board = new Chessboard();
 
         board.Move(new Move("e2", "e4"));
         board.Move(new Move("e7", "e5"));
@@ -21,7 +21,7 @@ public class ChessMoveBenchmark
     [Benchmark]
     public void MoveUsingSan()
     {
-        var board = new ChessBoard();
+        var board = new Chessboard();
 
         board.Move("e4");
         board.Move("e5");
@@ -86,13 +86,13 @@ public class ChessGenerateMovesBenchmark
     [Benchmark]
     public void MovesSanFalse()
     {
-        new ChessBoard().Moves(generateSan: false);
+        new Chessboard().Moves(generateSan: false);
     }
 
     [Benchmark]
     public void MovesSanTrue()
     {
-        new ChessBoard().Moves(generateSan: true);
+        new Chessboard().Moves(generateSan: true);
     }
 
     //  Tests:
@@ -164,7 +164,7 @@ public class ChessIsValidMoveBenchmark
     [Benchmark]
     public void IsValidMove()
     {
-        var board = new ChessBoard();
+        var board = new Chessboard();
         board.IsValidMove(new Move("b1", "c3"));
         board.IsValidMove(new Move("c1", "g5"));
         board.IsValidMove(new Move("d1", "d6"));
@@ -220,10 +220,10 @@ public class ChessFenConversionsBenchmark
     [Benchmark]
     public void FenConversion()
     {
-        ChessBoard.LoadFromFen("1nbqkbn1/pppppppp/NpNpNpNp/pBpBpBpB/bPbPbPbP/PnPnPnPn/PPPPPPPP/1NBQKBN1 w - - 0 1");
-        ChessBoard.LoadFromFen("rnbqkbnr/ppp1pppp/8/8/3pP3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
-        ChessBoard.LoadFromFen("r3kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1");
-        ChessBoard.LoadFromFen("rnb1kbnr/pppppppp/8/8/8/8/5q2/7K b kq - 0 1");
+        Chessboard.LoadFromFen("1nbqkbn1/pppppppp/NpNpNpNp/pBpBpBpB/bPbPbPbP/PnPnPnPn/PPPPPPPP/1NBQKBN1 w - - 0 1");
+        Chessboard.LoadFromFen("rnbqkbnr/ppp1pppp/8/8/3pP3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
+        Chessboard.LoadFromFen("r3kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1");
+        Chessboard.LoadFromFen("rnb1kbnr/pppppppp/8/8/8/8/5q2/7K b kq - 0 1");
     }
 
     //  Tests:
@@ -280,7 +280,7 @@ public class ChessPgnConversionsBenchmark
     [Benchmark]
     public void PgnConversion()
     {
-        ChessBoard.LoadFromPgn(
+        Chessboard.LoadFromPgn(
             @"[Event ""Live Chess""]
         [Site ""Chess.com""]
         [Date ""2022.01.11""]
@@ -300,7 +300,7 @@ public class ChessPgnConversionsBenchmark
         Qb6 15.Bxf6 Qxf6 16.Qxf6 gxf6 17.Nxd5 Rb8 18.Nxf6+ Kh8 19.b3 Rb4 20.c3 Bb7
         21.cxb4 1-0");
 
-        ChessBoard.LoadFromPgn(
+        Chessboard.LoadFromPgn(
             @"[Event ""Live Chess""]
         [Site ""Chess.com""]
         [Date ""2022.01.03""]
@@ -366,7 +366,7 @@ public class ChessOverallBenchmark
     [Benchmark]
     public void SampleGame()
     {
-        var board = ChessBoard.LoadFromPgn(@"
+        var board = Chessboard.LoadFromPgn(@"
         [White ""AG1612""]
         [Black ""GrafLermontov""]
         [Variant ""From Position""]
@@ -411,13 +411,13 @@ public class ChessOverallBenchmark
 [MemoryDiagnoser]
 public class ChessFenBuilderBenchmark
 {
-    private readonly ChessBoard _board;
-    private readonly ChessBoard _board2;
+    private readonly Chessboard _board;
+    private readonly Chessboard _board2;
 
     public ChessFenBuilderBenchmark()
     {
-        _board = ChessBoard.LoadFromFen("r1q1k1r1/p1p1p1p1/b1n1n1b1/1p1p1p1p/P1P1P1P1/B1N1N1B1/1P1P1P1P/R1Q1K1R1 w KQkq g3 100 100");
-        _board2 = ChessBoard.LoadFromFen("8/pp3p1k/2p2q1p/3r1P2/5R2/7P/P1P1QP2/7K b - - 2 30");
+        _board = Chessboard.LoadFromFen("r1q1k1r1/p1p1p1p1/b1n1n1b1/1p1p1p1p/P1P1P1P1/B1N1N1B1/1P1P1P1P/R1Q1K1R1 w KQkq g3 100 100");
+        _board2 = Chessboard.LoadFromFen("8/pp3p1k/2p2q1p/3r1P2/5R2/7P/P1P1QP2/7K b - - 2 30");
     }
 
     [Benchmark]

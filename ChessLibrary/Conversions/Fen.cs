@@ -9,7 +9,7 @@
 
 namespace Chess;
 
-public partial class ChessBoard
+public partial class Chessboard
 {
     /// <summary>
     /// Tries to load 
@@ -21,7 +21,7 @@ public partial class ChessBoard
     /// <param name="board">Result with loaded board</param>
     /// <param name="autoEndgameRules">Automatic draw/endgame rules that will be used to check for endgame</param>
     /// <returns>Whether load is succeeded</returns>
-    public static bool TryLoadFromFen(string fen, [NotNullWhen(true)] out ChessBoard? board, AutoEndgameRules autoEndgameRules = AutoEndgameRules.None)
+    public static bool TryLoadFromFen(string fen, [NotNullWhen(true)] out Chessboard? board, AutoEndgameRules autoEndgameRules = AutoEndgameRules.None)
     {
         var (succeeded, _) = FenBoardBuilder.TryLoad(fen, out var builder);
 
@@ -44,8 +44,8 @@ public partial class ChessBoard
     /// <param name="fen">FEN string to load</param>
     /// <param name="autoEndgameRules">Automatic draw/endgame rules that will be used to check for endgame</param>
     /// <returns>ChessBoard with according positions</returns>
-    /// <exception cref="ChessArgumentException">Given FEN string didn't match the Regex pattern</exception>
-    public static ChessBoard LoadFromFen(string fen, AutoEndgameRules autoEndgameRules = AutoEndgameRules.None)
+    /// <exception cref="ArgumentException">Given FEN string didn't match the Regex pattern</exception>
+    public static Chessboard LoadFromFen(string fen, AutoEndgameRules autoEndgameRules = AutoEndgameRules.None)
     {
         var (succeeded, exception) = FenBoardBuilder.TryLoad(fen, out var builder);
 
@@ -55,9 +55,9 @@ public partial class ChessBoard
         return BuildBoardFromFen(builder, autoEndgameRules);
     }
 
-    private static ChessBoard BuildBoardFromFen(FenBoardBuilder builder, AutoEndgameRules autoEndgameRules)
+    private static Chessboard BuildBoardFromFen(FenBoardBuilder builder, AutoEndgameRules autoEndgameRules)
     {
-        var board = new ChessBoard
+        var board = new Chessboard
         {
             FenBuilder = builder,
             pieces = builder.Pieces,

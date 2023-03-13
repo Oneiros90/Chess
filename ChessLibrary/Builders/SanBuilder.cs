@@ -11,13 +11,13 @@ namespace Chess;
 
 internal static class SanBuilder
 {
-    public static (bool succeeded, ChessException? exception) TryParse(ChessBoard board, string san, out Move? move, bool resetSan = false)
+    public static (bool succeeded, ChessException? exception) TryParse(Chessboard board, string san, out Move? move, bool resetSan = false)
     {
         move = null;
         var matches = Regexes.RegexSanOneMove.Matches(san);
 
         if (matches.Count == 0)
-            return (false, new ChessArgumentException(board, "SAN move string should match pattern: " + Regexes.SanMovesPattern));
+            return (false, new ArgumentException(board, "SAN move string should match pattern: " + Regexes.SanMovesPattern));
 
         var moveOut = new Move();
         var originalPos = new Position();
@@ -81,7 +81,7 @@ internal static class SanBuilder
         return (true, null);
     }
 
-    private static (bool succeeded, ChessException? exception) ParseOriginalPosition(ChessBoard board, string san, Move moveOut, ref Position originalPos)
+    private static (bool succeeded, ChessException? exception) ParseOriginalPosition(Chessboard board, string san, Move moveOut, ref Position originalPos)
     {
         var ambiguousMoves = GetMovesOfPieceOnPosition(moveOut.Piece, moveOut.NewPosition, board).ToList();
 
@@ -118,8 +118,8 @@ internal static class SanBuilder
         {
             return count switch
             {
-                < 1 => new ChessSanNotFoundException(board, san),
-                > 1 => new ChessSanTooAmbiguousException(board, san, moves.ToArray()),
+                < 1 => new SanNotFoundException(board, san),
+                > 1 => new SanTooAmbiguousException(board, san, moves.ToArray()),
                 _ => null
             };
         }
@@ -144,7 +144,7 @@ internal static class SanBuilder
         }
     }
 
-    private static void ParseCastling(ChessBoard board, Group group, Move moveOut, ref Position originalPos)
+    private static void ParseCastling(Chessboard board, Group group, Move moveOut, ref Position originalPos)
     {
         moveOut.Parameter = IMoveParameter.FromString(group.Value);
         if (board.Turn == PieceColor.White)
@@ -165,12 +165,12 @@ internal static class SanBuilder
         }
     }
 
-    public static (bool succeeded, ChessException? exception) TryParse(ChessBoard board, Move move, out string? san)
+    public static (bool succeeded, ChessException? exception) TryParse(Chessboard board, Move move, out string? san)
     {
         san = null;
 
         if (move is not { HasValue: true })
-            return (false, new ChessArgumentException(board, "Given move is null or doesn't have valid positions values"));
+            return (false, new ArgumentException(board, "Given move is null or doesn't have valid positions values"));
 
         Span<char> span = stackalloc char[10];
         int offset = 0;
@@ -215,7 +215,7 @@ internal static class SanBuilder
         return (true, null);
     }
 
-    private static ReadOnlySpan<char> HandleAmbiguousMovesNotation(Move move, ChessBoard board)
+    private static ReadOnlySpan<char> HandleAmbiguousMovesNotation(Move move, Chessboard board)
     {
         var ambiguousMoves = GetMovesOfPieceOnPosition(move.Piece, move.NewPosition, board).Where(m => m.OriginalPosition != move.OriginalPosition).ToList();
 
@@ -236,7 +236,7 @@ internal static class SanBuilder
         return new ReadOnlySpan<char>(span.Trim(stackalloc char[] { '\0' }).ToArray());
     }
 
-    private static IEnumerable<Move> GetMovesOfPieceOnPosition(Piece piece, Position newPosition, ChessBoard board)
+    private static IEnumerable<Move> GetMovesOfPieceOnPosition(Piece piece, Position newPosition, Chessboard board)
     {
         for (short i = 0; i < 8; i++)
         {
@@ -251,7 +251,7 @@ internal static class SanBuilder
 
                     var move = new Move(new Position { Y = i, X = j }, newPosition) { Piece = piece };
 
-                    if (ChessBoard.IsValidMove(move, board) && !ChessBoard.IsKingCheckedValidation(move, piece.Color, board))
+                    if (Chessboard.IsValidMove(move, board) && !Chessboard.IsKingCheckedValidation(move, piece.Color, board))
                         yield return move;
                 }
             }

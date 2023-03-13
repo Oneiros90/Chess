@@ -11,9 +11,9 @@ namespace Chess;
 
 internal static class PgnBuilder
 {
-    public static (bool succeeded, ChessException? exception) TryLoad(string pgn, out ChessBoard? board, AutoEndgameRules autoEndgameRules)
+    public static (bool succeeded, ChessException? exception) TryLoad(string pgn, out Chessboard? board, AutoEndgameRules autoEndgameRules)
     {
-        board = new ChessBoard()
+        board = new Chessboard()
         {
             AutoEndgameRules = autoEndgameRules
         };
@@ -36,7 +36,7 @@ internal static class PgnBuilder
             board.HandleKingChecked();
             board.HandleEndGame();
 
-            if (board.IsEndGame)
+            if (board.IsEndgame)
             {
                 return (true, null);
             }
@@ -71,7 +71,7 @@ internal static class PgnBuilder
         board.HandleEndGame();
 
         // If not actual end game but game is in fact ended => someone resigned
-        if (!board.IsEndGame)
+        if (!board.IsEndgame)
         {
             if (pgn.Contains("1-0"))
                 board.Resign(PieceColor.Black);
@@ -86,7 +86,7 @@ internal static class PgnBuilder
         return (true, null);
     }
 
-    private static string ExtractPgnHeaders(string pgn, ChessBoard board)
+    private static string ExtractPgnHeaders(string pgn, Chessboard board)
     {
         var headersMatches = Regexes.RegexHeaders.Matches(pgn);
 
@@ -107,7 +107,7 @@ internal static class PgnBuilder
         return Regexes.RegexHeaders.Replace(pgn, "");
     }
 
-    public static string BoardToPgn(ChessBoard board)
+    public static string BoardToPgn(Chessboard board)
     {
         StringBuilder builder = new();
 
@@ -145,11 +145,11 @@ internal static class PgnBuilder
             board.moveIndex++;
         }
 
-        if (board.IsEndGame)
+        if (board.IsEndgame)
         {
-            if (board.EndGame.WonSide == PieceColor.White)
+            if (board.Endgame.WonSide == PieceColor.White)
                 builder.Append(" 1-0");
-            else if (board.EndGame.WonSide == PieceColor.Black)
+            else if (board.Endgame.WonSide == PieceColor.Black)
                 builder.Append(" 0-1");
             else
                 builder.Append(" 1/2-1/2");

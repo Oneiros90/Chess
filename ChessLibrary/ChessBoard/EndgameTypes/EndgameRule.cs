@@ -1,4 +1,4 @@
-﻿// *****************************************************
+// *****************************************************
 // *                                                   *
 // * O Lord, Thank you for your goodness in our lives. *
 // *     Please bless this code to our compilers.      *
@@ -10,19 +10,19 @@
 namespace Chess;
 
 /// <summary>
-/// https://www.chessprogramming.org/Fifty-move_Rule
+/// https://www.chessprogramming.org/Draw
 /// </summary>
-internal class FiftyMoveRule : EndGameRule
+internal abstract class EndgameRule
 {
-    private const int MAX_HALF_MOVE_CLOCK = 100;
+    protected Chessboard board;
 
-    public FiftyMoveRule(ChessBoard board) : base(board) { }
+    internal abstract EndgameType Type { get; }
 
-    internal override EndgameType Type => EndgameType.FiftyMoveRule;
-
-    internal override bool IsEndGame()
+    internal EndgameRule(Chessboard board)
     {
-        return board.GetHalfMovesCount() >= MAX_HALF_MOVE_CLOCK;
+        this.board = board;
     }
+
+    internal abstract bool IsEndGame();
 }
 

@@ -12,11 +12,11 @@ namespace Chess;
 /// <summary>
 /// https://www.chessprogramming.org/Material#InsufficientMaterial
 /// </summary>
-internal class InsufficientMaterialRule : EndGameRule
+internal class InsufficientMaterialRule : EndgameRule
 {
     internal override EndgameType Type => EndgameType.InsufficientMaterial;
 
-    public InsufficientMaterialRule(ChessBoard board) : base(board) { }
+    public InsufficientMaterialRule(Chessboard board) : base(board) { }
 
     internal override bool IsEndGame()
     {

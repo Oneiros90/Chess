@@ -43,7 +43,7 @@ public class Piece
     public Piece(string piece)
     {
         if (!Regexes.RegexPiece.IsMatch(piece))
-            throw new ChessArgumentException(null, "Piece should match pattern: " + Regexes.PiecePattern);
+            throw new ArgumentException(null, "Piece should match pattern: " + Regexes.PiecePattern);
 
         Color = PieceColor.FromChar(piece[0]);
         Type = PieceType.FromChar(piece[1]);
@@ -64,7 +64,7 @@ public class Piece
     public Piece(char fenChar)
     {
         if (!Regexes.RegexFenPiece.IsMatch(fenChar.ToString()))
-            throw new ChessArgumentException(null, "FEN piece character should match pattern: " + Regexes.FenPiecePattern);
+            throw new ArgumentException(null, "FEN piece character should match pattern: " + Regexes.FenPiecePattern);
 
         Type = PieceType.FromChar(fenChar);
         Color = char.IsLower(fenChar) ? PieceColor.Black : PieceColor.White;
@@ -90,7 +90,7 @@ public class Piece
         {
             var e when e == PieceColor.White => char.ToUpper(Type.AsChar),
             var e when e == PieceColor.Black => char.ToLower(Type.AsChar),
-            var _ => throw new ChessArgumentException(null, nameof(Color), nameof(Piece.ToFenChar)),
+            var _ => throw new ArgumentException(null, nameof(Color), nameof(Piece.ToFenChar)),
         };
     }
 }

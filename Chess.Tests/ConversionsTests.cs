@@ -8,10 +8,10 @@ public class ConversionsTests
     [Fact]
     public void TestPgnLoad()
     {
-        var board = new ChessBoard();
+        var board = new Chessboard();
 
         // Normal Pgn
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Event ""Live Chess""]
         [Site ""Chess.com""]
         [Date ""2022.01.11""]
@@ -32,9 +32,9 @@ public class ConversionsTests
         21.cxb4 1-0");
 
         Assert.Equal("5r1k/pbp2p1p/5N2/8/1P1P4/1P5P/P5P1/R5KR b - - 0 21", board.ToFen());
-        Assert.Equal(EndgameType.Resigned, board.EndGame.EndgameType);
+        Assert.Equal(EndgameType.Resigned, board.Endgame.EndgameType);
 
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Event ""Live Chess""]
         [Site ""Chess.com""]
         [Date ""2022.01.03""]
@@ -60,10 +60,10 @@ public class ConversionsTests
         b8=Q f1=Q 53.Qb4+ Kg3 54.Qb3+ Qf3 55.Qxf3+ Kxf3 1/2-1/2");
 
         Assert.Equal("8/8/8/8/K7/5k2/8/8 w - - 0 56", board.ToFen());
-        Assert.True(board.IsEndGame);
+        Assert.True(board.IsEndgame);
 
         // Load with comments and alternative moves
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"1. e4 {[%timestamp 1]} 1... f5 {[%timestamp 1]} 2. exf5 {[%timestamp 7]} 2... g6
         {[%timestamp 16]} 3. fxg6 {[%timestamp 7]} 3... Nf6 {[%timestamp 26]} 4. g7
         {[%timestamp 10]} 4... Ng4 {[%timestamp 20]} (4... Ne4 5. d3 Nc3 6. f3 Nd5 7. f4
@@ -73,7 +73,7 @@ public class ConversionsTests
         Assert.Equal("1. e4 f5 2. exf5 g6 3. fxg6 Nf6 4. g7 Ng4 5. gxh8=N 1-0", board.ToPgn());
 
         // From Chess.com
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Event ""Live Chess""]
         [Site ""Chess.com""]
         [Date ""2022.02.20""]
@@ -100,11 +100,11 @@ public class ConversionsTests
         Kf3 Kg8 62. Bxg6 1-0");
 
         Assert.Equal("6k1/5b2/4pQB1/3pP2p/1P1P3P/4NKP1/3q4/8 b - - 0 62", board.ToFen());
-        Assert.True(board.IsEndGame);
-        Assert.Equal(PieceColor.White, board.EndGame.WonSide);
+        Assert.True(board.IsEndgame);
+        Assert.Equal(PieceColor.White, board.Endgame.WonSide);
 
         // With alternatives
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Event ""Live Chess""]
         [Site ""Chess.com""]
         [Date ""2022.02.19""]
@@ -136,7 +136,7 @@ public class ConversionsTests
         Assert.Equal("8/8/8/8/8/5KR1/8/7k b - - 2 75", board.ToFen());
 
         // Ultimate pgn
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Event ""Live Chess""]
         [Site ""Chess.com""]
         [Date ""2022.02.02""]
@@ -172,7 +172,7 @@ public class ConversionsTests
 
         // From Lichess
         // Test promotions
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Event ""Casual Correspondence game""]
         [Date ""2022.02.20""]
         [White ""Anonymous""]
@@ -195,7 +195,7 @@ public class ConversionsTests
 
         Assert.Equal("Bn1qk2r/4bppp/2P2n2/8/3Q2b1/3B4/P2P3P/nNB1K1Nq w k - 0 16", board.ToFen());
 
-        board = ChessBoard.LoadFromPgn(@"
+        board = Chessboard.LoadFromPgn(@"
         [Event ""Casual Rapid game""]
         [Site ""https://lichess.org/LiqfXWwa""]
         [Date ""2022.02.26""]
@@ -221,27 +221,27 @@ public class ConversionsTests
     [Fact]
     public void TestPgnLoadFromPosition()
     {
-        var board = new ChessBoard();
+        var board = new Chessboard();
         // From Position
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Variant ""From Position""]
         [FEN ""rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1""]
             
         1.exd5 e6 2.dxe6 fxe6");
         Assert.Equal("rnbqkbnr/ppp3pp/4p3/8/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 3", board.ToFen());
 
-        board = ChessBoard.LoadFromPgn("");
+        board = Chessboard.LoadFromPgn("");
         Assert.Equal("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", board.ToFen());
 
         // With alternative moves
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Variant ""From Position""]
         [FEN ""rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1""]
             
         1.exd5 e6 2.dxe6 fxe6 3.d4(3.f4 g5 4.fxg5) 3... c5 4.b4");
         Assert.Equal("rnbqkbnr/pp4pp/4p3/2p5/1P1P4/8/P1P2PPP/RNBQKBNR b KQkq b3 0 4", board.ToFen());
 
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Variant ""From Position""]
         [FEN ""rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1""]
             
@@ -249,7 +249,7 @@ public class ConversionsTests
         Assert.Equal("rnbqkbnr/ppp1pppp/8/8/4p1P1/8/PPPP1P1P/RNBQKBNR b KQkq g3 0 2", board.ToFen());
         Assert.Contains("1... dxe4 2. g4", board.ToPgn());
 
-        board = ChessBoard.LoadFromPgn(
+        board = Chessboard.LoadFromPgn(
         @"[Variant ""From Position""]
         [FEN ""rnbqkbnr/ppp1p1pp/8/3p1p2/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 5""]");
 
@@ -262,7 +262,7 @@ public class ConversionsTests
         Assert.Contains("5... dxe4 6. f3 exf3 7. gxf3 1/2-1/2", board.ToPgn());
 
         // Self made
-        board = ChessBoard.LoadFromFen("rnb1kbnr/pppppppp/8/1q6/8/8/P1PPPPPP/R3K2R w KQkq - 0 1");
+        board = Chessboard.LoadFromFen("rnb1kbnr/pppppppp/8/1q6/8/8/P1PPPPPP/R3K2R w KQkq - 0 1");
 
         board.Move("e4");
         board.Move("d5");
@@ -275,7 +275,7 @@ public class ConversionsTests
     [Fact]
     public void TestFenLoad()
     {
-        var board = new ChessBoard();
+        var board = new Chessboard();
         var moves = new[]
         {
                 "Rh2",
@@ -286,9 +286,9 @@ public class ConversionsTests
         };
 
         // En passant pos only 3rd rank possible of 6th
-        Assert.Throws<ChessArgumentException>(() => ChessBoard.LoadFromFen("8/p7/7R/5pk1/8/3B1r2/PP3P2/2K5 w KQkq e1 1 34"));
+        Assert.Throws<ArgumentException>(() => Chessboard.LoadFromFen("8/p7/7R/5pk1/8/3B1r2/PP3P2/2K5 w KQkq e1 1 34"));
 
-        board = ChessBoard.LoadFromFen("8/p7/7R/5pk1/8/3B1r2/PP3P2/2K5 w - - 1 34");
+        board = Chessboard.LoadFromFen("8/p7/7R/5pk1/8/3B1r2/PP3P2/2K5 w - - 1 34");
 
         for (int i = 0; i < moves.Length; i++)
             Assert.True(board.Move(moves[i]));
@@ -296,14 +296,14 @@ public class ConversionsTests
         Assert.Equal("8/p7/8/5pk1/8/5r2/PPK2PR1/8 b - - 3 36", board.ToFen());
 
         // Checkmate
-        board = ChessBoard.LoadFromFen("rnb1kbnr/pppppppp/8/8/5PPq/8/PPPPP2P/RNBQKBNR w KQkq - 0 1");
+        board = Chessboard.LoadFromFen("rnb1kbnr/pppppppp/8/8/5PPq/8/PPPPP2P/RNBQKBNR w KQkq - 0 1");
 
-        Assert.Equal(EndgameType.Checkmate, board.EndGame.EndgameType);
+        Assert.Equal(EndgameType.Checkmate, board.Endgame.EndgameType);
 
         // Stalemate
-        board = ChessBoard.LoadFromFen("rnb1kbnr/pppppppp/8/8/8/8/5q2/7K w kq - 0 1");
+        board = Chessboard.LoadFromFen("rnb1kbnr/pppppppp/8/8/8/8/5q2/7K w kq - 0 1");
 
-        Assert.Equal(EndgameType.Stalemate, board.EndGame.EndgameType);
+        Assert.Equal(EndgameType.Stalemate, board.Endgame.EndgameType);
     }
 
 }

@@ -9,40 +9,40 @@
 
 namespace Chess;
 
-internal class EndGameProvider
+internal class EndgameProvider
 {
-    private ChessBoard board;
+    private Chessboard board;
 
-    public EndGameProvider(ChessBoard board)
+    public EndgameProvider(Chessboard board)
     {
         this.board = board;
     }
 
-    public EndGameInfo? GetEndGameInfo()
+    public EndgameInfo? GetEndGameInfo()
     {
-        EndGameInfo? endgameInfo = null;
+        EndgameInfo? endgameInfo = null;
 
         if (board.moveIndex >= 0
          && board.executedMoves[board.moveIndex].IsMate)
         {
             if (board.executedMoves[board.moveIndex].IsCheck)
-                endgameInfo = new EndGameInfo(EndgameType.Checkmate, board.Turn.OppositeColor());
+                endgameInfo = new EndgameInfo(EndgameType.Checkmate, board.Turn.OppositeColor());
             else
-                endgameInfo = new EndGameInfo(EndgameType.Stalemate, null);
+                endgameInfo = new EndgameInfo(EndgameType.Stalemate, null);
         }
         else if (board.LoadedFromFen)
         {
-            var whiteHasMoves = ChessBoard.PlayerHasMoves(PieceColor.White, board);
-            var blackHasMoves = ChessBoard.PlayerHasMoves(PieceColor.Black, board);
+            var whiteHasMoves = Chessboard.PlayerHasMoves(PieceColor.White, board);
+            var blackHasMoves = Chessboard.PlayerHasMoves(PieceColor.Black, board);
 
             if (!whiteHasMoves && board.WhiteKingChecked)
-                endgameInfo = new EndGameInfo(EndgameType.Checkmate, PieceColor.Black);
+                endgameInfo = new EndgameInfo(EndgameType.Checkmate, PieceColor.Black);
 
             else if (!blackHasMoves && board.BlackKingChecked)
-                endgameInfo = new EndGameInfo(EndgameType.Checkmate, PieceColor.White);
+                endgameInfo = new EndgameInfo(EndgameType.Checkmate, PieceColor.White);
 
             else if (!whiteHasMoves || !blackHasMoves)
-                endgameInfo = new EndGameInfo(EndgameType.Stalemate, null);
+                endgameInfo = new EndgameInfo(EndgameType.Stalemate, null);
         }
 
         if (endgameInfo is null)
@@ -53,11 +53,11 @@ internal class EndGameProvider
         return endgameInfo;
     }
 
-    private EndGameInfo? ResolveDrawRules(AutoEndgameRules autoEndgameRules)
+    private EndgameInfo? ResolveDrawRules(AutoEndgameRules autoEndgameRules)
     {
-        EndGameInfo? endgameInfo = null;
+        EndgameInfo? endgameInfo = null;
 
-        var rules = new List<EndGameRule>();
+        var rules = new List<EndgameRule>();
 
         if ((autoEndgameRules & AutoEndgameRules.InsufficientMaterial) == AutoEndgameRules.InsufficientMaterial)
             rules.Add(new InsufficientMaterialRule(board));
@@ -72,7 +72,7 @@ internal class EndGameProvider
         {
             if (rules[i].IsEndGame())
             {
-                endgameInfo = new EndGameInfo(rules[i].Type, null);
+                endgameInfo = new EndgameInfo(rules[i].Type, null);
             }
         }
 

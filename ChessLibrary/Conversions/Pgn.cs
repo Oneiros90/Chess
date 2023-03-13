@@ -9,7 +9,7 @@
 
 namespace Chess;
 
-public partial class ChessBoard
+public partial class Chessboard
 {
     /// <summary>
     /// Tries to load ChessBoard from Portable Game Notation<br/>
@@ -27,7 +27,7 @@ public partial class ChessBoard
     /// <param name="board">Result with loaded board</param>
     /// <param name="autoEndgameRules">Automatic draw/endgame rules that will be used to check for endgame</param>
     /// <returns>Whether load is succeeded</returns>
-    public static bool TryLoadFromPgn(string pgn, [NotNullWhen(true)] out ChessBoard? board, AutoEndgameRules autoEndgameRules = AutoEndgameRules.None)
+    public static bool TryLoadFromPgn(string pgn, [NotNullWhen(true)] out Chessboard? board, AutoEndgameRules autoEndgameRules = AutoEndgameRules.None)
     {
         return PgnBuilder.TryLoad(pgn, out board, autoEndgameRules).succeeded;
     }
@@ -47,11 +47,11 @@ public partial class ChessBoard
     /// <param name="pgn">PGN string to load</param>
     /// <param name="autoEndgameRules">Automatic draw/endgame rules that will be used to check for endgame</param>
     /// <returns>ChessBoard with according positions</returns>
-    /// <exception cref="ChessArgumentException">Given FEN string didn't match the Regex pattern (if PGN contains FEN in header)</exception>
-    /// <exception cref="ChessArgumentException">Given San-notated move didn't match the Regex pattern</exception>
-    /// <exception cref="ChessSanNotFoundException">Given San-notated move is not valid for current board positions</exception>
-    /// <exception cref="ChessSanTooAmbiguousException">Given San-notated move is too ambiguous between multiple moves</exception>
-    public static ChessBoard LoadFromPgn(string pgn, AutoEndgameRules autoEndgameRules = AutoEndgameRules.None)
+    /// <exception cref="ArgumentException">Given FEN string didn't match the Regex pattern (if PGN contains FEN in header)</exception>
+    /// <exception cref="ArgumentException">Given San-notated move didn't match the Regex pattern</exception>
+    /// <exception cref="SanNotFoundException">Given San-notated move is not valid for current board positions</exception>
+    /// <exception cref="SanTooAmbiguousException">Given San-notated move is too ambiguous between multiple moves</exception>
+    public static Chessboard LoadFromPgn(string pgn, AutoEndgameRules autoEndgameRules = AutoEndgameRules.None)
     {
         var (succeeded, exception) = PgnBuilder.TryLoad(pgn, out var board, autoEndgameRules);
 

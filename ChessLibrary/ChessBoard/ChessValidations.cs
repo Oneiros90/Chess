@@ -9,7 +9,7 @@
 
 namespace Chess;
 
-public partial class ChessBoard
+public partial class Chessboard
 {
     /// <summary>
     /// Checks if given move is valid for current pieces positions
@@ -31,17 +31,17 @@ public partial class ChessBoard
         return IsValidMove(move, this, false, true);
     }
 
-    private static bool IsCheckmate(PieceColor side, ChessBoard board)
+    private static bool IsCheckmate(PieceColor side, Chessboard board)
     {
         return IsKingChecked(side, board) && !PlayerHasMoves(side, board);
     }
 
-    private static bool IsStalemate(PieceColor side, ChessBoard board)
+    private static bool IsStalemate(PieceColor side, Chessboard board)
     {
         return !IsKingChecked(side, board) && !PlayerHasMoves(side, board);
     }
 
-    private static Position GetKingPosition(PieceColor side, ChessBoard board)
+    private static Position GetKingPosition(PieceColor side, Chessboard board)
     {
         var kingPos = new Position();
         for (short i = 0; i < 8; i++)
@@ -58,13 +58,13 @@ public partial class ChessBoard
         return kingPos;
     }
 
-    internal static bool IsValidMove(Move move, ChessBoard board, bool raise, bool checkTurn)
+    internal static bool IsValidMove(Move move, Chessboard board, bool raise, bool checkTurn)
     {
         if (move is null || !move.HasValue)
             throw new ArgumentNullException(nameof(move));
 
         if (board.pieces[move.OriginalPosition.Y, move.OriginalPosition.X] is null)
-            throw new ChessPieceNotFoundException(board, move.OriginalPosition);
+            throw new PieceNotFoundException(board, move.OriginalPosition);
 
         if (checkTurn && board.pieces[move.OriginalPosition.Y, move.OriginalPosition.X].Color != board.Turn) return false;
 
@@ -125,13 +125,13 @@ public partial class ChessBoard
         {
             if (isValid && raise)
             {
-                board.OnInvalidMoveKingCheckedEvent(new CheckEventArgs(board, move.Piece.Color == PieceColor.White ? board.WhiteKing : board.BlackKing, true));
+                board.OnInvalidMoveKingCheckedEvent(new CheckedChangedEventArgs(board, move.Piece.Color == PieceColor.White ? board.WhiteKing : board.BlackKing, true));
             }
             return false;
         }
     }
 
-    internal static bool IsValidMove(Move move, ChessBoard board)
+    internal static bool IsValidMove(Move move, Chessboard board)
     {
         return move.Piece.Type switch
         {
@@ -149,9 +149,9 @@ public partial class ChessBoard
     /// Basically checking if after the move will been performed 
     /// the next move onto position of king is valid for one of pieces of opponent
     /// </summary>
-    internal static bool IsKingCheckedValidation(Move move, PieceColor side, ChessBoard board)
+    internal static bool IsKingCheckedValidation(Move move, PieceColor side, Chessboard board)
     {
-        var fboard = new ChessBoard(board.pieces, board.executedMoves);
+        var fboard = new Chessboard(board.pieces, board.executedMoves);
 
         // If validating castle move
         if (move.Parameter is MoveCastle castle && move.Piece.Color == side
@@ -175,7 +175,7 @@ public partial class ChessBoard
         return IsKingChecked(side, fboard);
     }
 
-    private static bool IsKingChecked(PieceColor side, ChessBoard board)
+    private static bool IsKingChecked(PieceColor side, Chessboard board)
     {
         var kingPos = GetKingPosition(side, board);
 
@@ -200,9 +200,9 @@ public partial class ChessBoard
         return false;
     }
 
-    private static bool PlayerHasMovesValidation(Move move, PieceColor side, ChessBoard board)
+    private static bool PlayerHasMovesValidation(Move move, PieceColor side, Chessboard board)
     {
-        var fboard = new ChessBoard(board.pieces, board.executedMoves);
+        var fboard = new Chessboard(board.pieces, board.executedMoves);
 
         if (move.OriginalPosition != move.NewPosition)
         {
@@ -212,7 +212,7 @@ public partial class ChessBoard
         return PlayerHasMoves(side, fboard);
     }
 
-    internal static bool PlayerHasMoves(PieceColor side, ChessBoard board)
+    internal static bool PlayerHasMoves(PieceColor side, Chessboard board)
     {
         for (short i = 0; i < 8; i++)
         {
@@ -235,7 +235,7 @@ public partial class ChessBoard
         return false;
     }
 
-    private static bool PawnValidation(Move move, ChessBoard board)
+    private static bool PawnValidation(Move move, Chessboard board)
     {
         short v = (short)(move.NewPosition.Y - move.OriginalPosition.Y); // Vertical difference
         short h = (short)(move.NewPosition.X - move.OriginalPosition.X); // Horizontal difference
@@ -368,7 +368,7 @@ public partial class ChessBoard
         else return false;
     }
 
-    private static bool KingValidation(Move move, ChessBoard board)
+    private static bool KingValidation(Move move, Chessboard board)
     {
         if (Math.Abs(move.NewPosition.X - move.OriginalPosition.X) < 2 && Math.Abs(move.NewPosition.Y - move.OriginalPosition.Y) < 2)
         {
@@ -445,7 +445,7 @@ public partial class ChessBoard
         return false;
     }
 
-    internal static bool HasRightToCastle(PieceColor side, CastleType castleType, ChessBoard board)
+    internal static bool HasRightToCastle(PieceColor side, CastleType castleType, Chessboard board)
     {
         var valid = false;
 
@@ -482,7 +482,7 @@ public partial class ChessBoard
             {
                 CastleType.King => new Position(7, (short)(side == PieceColor.White ? 0 : 7)), // "h1" : "h8"
                 CastleType.Queen => new Position(0, (short)(side == PieceColor.White ? 0 : 7)), // "a1" : "a8"
-                _ => throw new ChessArgumentException(board, "Invalid Castle type parameter"),
+                _ => throw new ArgumentException(board, "Invalid Castle type parameter"),
             };
 
             return board.pieces[rookpos.Y, rookpos.X] is not null
@@ -492,12 +492,12 @@ public partial class ChessBoard
         }
     }
 
-    private static bool PieceEverMoved(Position piecePos, ChessBoard board)
+    private static bool PieceEverMoved(Position piecePos, Chessboard board)
     {
         return board.DisplayedMoves.Any(p => p.OriginalPosition == piecePos);
     }
 
-    private static bool IsValidEnPassant(Move move, ChessBoard board, short v, short h)
+    private static bool IsValidEnPassant(Move move, Chessboard board, short v, short h)
     {
         if (Math.Abs(v) == 1 && Math.Abs(h) == 1) // Capture attempt
         {
@@ -515,7 +515,7 @@ public partial class ChessBoard
     /// <summary>
     /// Returns Valid(if not => X = -1,Y = -1) En passant move new position
     /// </summary>
-    internal static Position LastMoveEnPassantPosition(ChessBoard board)
+    internal static Position LastMoveEnPassantPosition(Chessboard board)
     {
         Position pos = new();
 

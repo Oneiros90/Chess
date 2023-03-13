@@ -12,7 +12,7 @@ namespace Chess;
 /// <summary>
 /// Chess end game info
 /// </summary>
-public class EndGameInfo
+public class EndgameInfo
 {
     /// <summary>
     /// Endgame type of current chess game
@@ -27,7 +27,7 @@ public class EndGameInfo
     /// <summary>
     /// Initializes new object of EndGameInfo with given end game parameters 
     /// </summary>
-    public EndGameInfo(EndgameType endgameType, PieceColor? wonSide)
+    public EndgameInfo(EndgameType endgameType, PieceColor? wonSide)
     {
         EndgameType = endgameType;
         WonSide = wonSide;

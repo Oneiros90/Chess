@@ -3,14 +3,14 @@ using Xunit;
 
 namespace ChessUnitTests;
 
-public class EndGameTests
+public class EndgameTests
 {
     [Fact]
-    public void EndGame_InsufficientMaterial_Basic()
+    public void Endgame_InsufficientMaterial_Basic()
     {
-        var board = ChessBoard.LoadFromFen("4k3/8/8/8/8/8/8/4K3 b - - 0 1", AutoEndgameRules.All);
+        var board = Chessboard.LoadFromFen("4k3/8/8/8/8/8/8/4K3 b - - 0 1", AutoEndgameRules.All);
 
-        Assert.Equal(EndgameType.InsufficientMaterial, board.EndGame.EndgameType);
+        Assert.Equal(EndgameType.InsufficientMaterial, board.Endgame.EndgameType);
     }
 
     [Theory]
@@ -18,13 +18,13 @@ public class EndGameTests
     [InlineData("8/8/1b6/8/4Pk2/8/8/4K3 b - - 0 1")] // Level 2
     [InlineData("8/8/8/8/1B1bPk2/8/8/4K3 b - - 0 1")] // Level 3
     [InlineData("8/8/8/8/1n1nPk2/8/8/4K3 b - - 0 1")] // Level 3
-    public void EndGame_InsufficientMaterial(string fen)
+    public void Endgame_InsufficientMaterial(string fen)
     {
-        var board = ChessBoard.LoadFromFen(fen, AutoEndgameRules.All);
+        var board = Chessboard.LoadFromFen(fen, AutoEndgameRules.All);
 
         board.Move("Kxe4");
 
-        Assert.Equal(EndgameType.InsufficientMaterial, board.EndGame.EndgameType);
+        Assert.Equal(EndgameType.InsufficientMaterial, board.Endgame.EndgameType);
     }
 
     [Theory]
@@ -33,45 +33,45 @@ public class EndGameTests
     [InlineData("8/8/6r1/8/1B2Pk2/8/8/4K3 b - - 0 1")]
     [InlineData("8/8/8/8/1B2Pk2/2B5/8/4K3 b - - 0 1")]
     [InlineData("8/8/8/8/1n1NPk2/8/8/4K3 b - - 0 1")]
-    public void EndGame_InsufficientMaterial_Ignored(string fen)
+    public void Endgame_InsufficientMaterial_Ignored(string fen)
     {
-        var board = ChessBoard.LoadFromFen(fen, AutoEndgameRules.All);
+        var board = Chessboard.LoadFromFen(fen, AutoEndgameRules.All);
 
         board.Move("Kxe4");
 
-        Assert.False(board.IsEndGame);
+        Assert.False(board.IsEndgame);
     }
 
     [Theory] // Anna Ushenina vs Olga Girya
     [InlineData("8/8/1N6/5B2/8/4K3/8/2k5 w - - 97 121", "Na4", "Kd1", "Nb2+")]
     [InlineData("8/8/8/5B2/2N5/3K4/8/3k4 b - - 104 124")]
-    public void EndGame_FiftyMoveRule(string fen, params string[] moves)
+    public void Endgame_FiftyMoveRule(string fen, params string[] moves)
     {
-        var board = ChessBoard.LoadFromFen(fen, AutoEndgameRules.All);
+        var board = Chessboard.LoadFromFen(fen, AutoEndgameRules.All);
 
         foreach (var move in moves)
             board.Move(move);
 
-        Assert.Equal(EndgameType.FiftyMoveRule, board.EndGame.EndgameType);
+        Assert.Equal(EndgameType.FiftyMoveRule, board.Endgame.EndgameType);
     }
 
     [Theory]
     [InlineData("4k2r/8/3b4/8/8/5B2/8/R3K3 w Qk - 0 1", "Be4", "Be5", "Bf3", "Bd6", "Be4", "Be5", "Bf3", "Bd6")]
     [InlineData("8/pp3p1k/2p2q1p/3r1P2/5R2/7P/P1P1QP2/7K b - - 2 30", "Qe5", "Qh5", "Qf6", "Qe2", "Re5", "Qd3", "Rd5", "Qe2")] // Fischer vs Petrosian
-    public void EndGame_Repetition(string fen, params string[] moves)
+    public void Endgame_Repetition(string fen, params string[] moves)
     {
-        var board = ChessBoard.LoadFromFen(fen, AutoEndgameRules.All);
+        var board = Chessboard.LoadFromFen(fen, AutoEndgameRules.All);
 
         foreach (var move in moves)
             board.Move(move);
 
-        Assert.Equal(EndgameType.Repetition, board.EndGame.EndgameType);
+        Assert.Equal(EndgameType.Repetition, board.Endgame.EndgameType);
     }
 
     [Fact]
-    public void EndGame_Repetition_CastleRightsChanged()
+    public void Endgame_Repetition_CastleRightsChanged()
     {
-        var board = ChessBoard.LoadFromFen("4k2r/8/3b4/8/8/5B2/8/R3K3 w Qk - 0 1", AutoEndgameRules.All);
+        var board = Chessboard.LoadFromFen("4k2r/8/3b4/8/8/5B2/8/R3K3 w Qk - 0 1", AutoEndgameRules.All);
 
         // Here both kings lose castle rights
         var moves1 = new[] { "Rb1", "Rg8" };
@@ -85,13 +85,13 @@ public class EndGameTests
         foreach (var move in moves2)
             board.Move(move);
 
-        Assert.Equal(EndgameType.Repetition, board.EndGame.EndgameType);
+        Assert.Equal(EndgameType.Repetition, board.Endgame.EndgameType);
     }
 
     [Fact]
-    public void EndGame_Repetition_Ignored_Due_CastleRightsChanged()
+    public void Endgame_Repetition_Ignored_Due_CastleRightsChanged()
     {
-        var board = ChessBoard.LoadFromFen("4k2r/8/3b4/8/8/5B2/8/R3K3 w Qk - 0 1", AutoEndgameRules.All);
+        var board = Chessboard.LoadFromFen("4k2r/8/3b4/8/8/5B2/8/R3K3 w Qk - 0 1", AutoEndgameRules.All);
 
         var moves1 = new[] { "Be4", "Be5", "Bf3", "Bd6" };
 
@@ -104,20 +104,20 @@ public class EndGameTests
         foreach (var move in moves2)
             board.Move(move);
 
-        Assert.False(board.IsEndGame);
+        Assert.False(board.IsEndgame);
     }
 
     [Fact]
-    public void EndGame_Repetition_Ignored_Due_EnPassant()
+    public void Endgame_Repetition_Ignored_Due_EnPassant()
     {
-        var board = ChessBoard.LoadFromFen("4k2r/8/8/3Pp3/8/8/8/R3K3 w - e6 0 2", AutoEndgameRules.All);
+        var board = Chessboard.LoadFromFen("4k2r/8/8/3Pp3/8/8/8/R3K3 w - e6 0 2", AutoEndgameRules.All);
 
         var moves = new[] { "Rb1", "Rg8", "Ra1", "Rh8", "Rb1", "Rg8", "Ra1", "Rh8" };
 
         foreach (var move in moves)
             board.Move(move);
 
-        Assert.False(board.IsEndGame);
+        Assert.False(board.IsEndgame);
     }
 }
 
